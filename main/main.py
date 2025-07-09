@@ -25,38 +25,18 @@ from transformers import pipeline, AutoTokenizer, BertTokenizer, BertForSequence
 
 load_dotenv()
 
-company = "adani green"
-link = "adanigreenenergy.com"
-# link2 = "unilever.com"
-
-merger = PyPDF2.PdfMerger()
-
-pdf1 = f"data/{company}/annual_report.pdf"
-pdf2 = f"data/{company}/esg_report.pdf"
-
-pdfs = [pdf1, pdf2]
-
-print("Merging PDFs")
-for pdf in pdfs:
-    merger.append(pdf)
-
-merger.write(f"data/{company}/final_doc.pdf")
-merger.close()
-print("PDFs merged successfully.\n")
+company = ""
+link = ""
+link2 = ""
 
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-filepath = pathlib.Path(f'data/{company}/final_doc.pdf')
+filepath = pathlib.Path(f'../data/{company}/final_doc.pdf')
 
 session = requests.Session()
 retry = Retry(connect=3, backoff_factor=0.5)
 adapter = HTTPAdapter(max_retries=retry)
 session.mount('http://', adapter)
 session.mount('https://', adapter)
-
-if not os.path.exists(f"data/{company}/final"):
-    os.makedirs(f"data/{company}/final")
-
-logging.basicConfig(format="%(asctime)s: %(message)s", level=logging.INFO, filename=f"data/{company}/final/logfile", encoding="utf-8")
 
 master = {}
 
@@ -119,7 +99,7 @@ def get_gemini():
             rt = response.text[8:i+1] + ']'
             break
 
-    with open(f"data/{company}/sentences.json", "w", encoding="utf-8") as f:
+    with open(f"../data/{company}/sentences.json", "w", encoding="utf-8") as f:
         f.write(rt)
 
     rj = json.loads(rt, strict=False)
@@ -193,7 +173,7 @@ def claims(texts):
     
     texts = [texts[i] for i in range(len(texts)) if preds[i] == 1]
 
-    with open(f"data/{company}/claims.json", "w") as f:
+    with open(f"../data/{company}/claims.json", "w") as f:
         f.write(json.dumps(texts))
     
     print("\nSuccessfully classified text into claims and non-claims.\n")
@@ -226,10 +206,10 @@ def actions(texts):
         if c % 5 == 0:
             print(c, end=' ')
 
-    with open(f"data/{company}/actions.json", "w") as f:
+    with open(f"../data/{company}/actions.json", "w") as f:
         f.write(json.dumps(action))
 
-    with open(f"data/{company}/non_action.json", "w") as f:
+    with open(f"../data/{company}/non_action.json", "w") as f:
         f.write(json.dumps(non_action))
     
     print("\nSuccessfully classified text into actions and non-actions.\n")
@@ -299,7 +279,11 @@ def extract_keywords(text):
     }
 
 def web(field, kw, cter):
-    query = f"{company} {' '.join([k[0] for k in kw["keywords"][:2]])} -site:{link}" # -site:{link2}"
+
+    if link2 == "":
+        query = f"{company} {' '.join([k[0] for k in kw["keywords"][:2]])} -site:{link}"
+    else:
+        query = f"{company} {' '.join([k[0] for k in kw['keywords'][:2]])} -site:{link} -site:{link2}"
 
     if cter < 100:
         apikey = os.getenv("NEWS_API_KEY")
@@ -642,12 +626,40 @@ def llm_score(esg_texts, texts_0, texts_1, na, non_action, action, action_contra
 
     return final_score, sep_scores, sec_scores
 
-def main():
+def main(c, l1, l2=""):
+
+    global company, link, link2
+    company = c.lower()
+    link = l1.lower()
+    link2 = l2.lower()
 
     # Take input files
 
+    merger = PyPDF2.PdfMerger()
+
+    pdf1 = f"../data/{company}/annual_report.pdf"
+    pdf2 = f"../data/{company}/esg_report.pdf"
+
+    pdfs = [pdf1, pdf2]
+
+    print("Merging PDFs")
+    for pdf in pdfs:
+        merger.append(pdf)
+
+    merger.write(f"../data/{company}/final_doc.pdf")
+    merger.close()
+    print("PDFs merged successfully.\n")
+
+    global filepath
+    filepath = pathlib.Path(f'../data/{company}/final_doc.pdf')
+
+    if not os.path.exists(f"../data/{company}/final"):
+        os.makedirs(f"../data/{company}/final")
+
+    logging.basicConfig(format="%(asctime)s: %(message)s", level=logging.INFO, filename=f"../data/{company}/final/logfile", encoding="utf-8")
+
     init_gwashes = get_gemini()
-    # init_gwashes = json.loads(open(f"data/{company}/sentences.json", "r").read())
+    # init_gwashes = json.loads(open(f"../data/{company}/sentences.json", "r").read())
 
     esg_texts = classify_esg(init_gwashes)
 
@@ -706,9 +718,9 @@ def main():
     print("Total non-actions: " + str(len(non_action)))
     print("")
 
-    json_object = json.dumps(master, indent=4)
-    with open(f"data/{company}/final/master.json", "w") as f:
-        f.write(json_object)
+    # json_object = json.dumps(master, indent=4)
+    # with open(f"../data/{company}/final/master.json", "w") as f:
+    #     f.write(json_object)
 
     cter = 0
     a_i = 0
@@ -718,7 +730,7 @@ def main():
         news_val = web(act['section'], kw, cter)
 
         action_contradicted.extend(validate(news_val, act))
-        with open(f"data/{company}/action_contradicted.json", "w") as f:
+        with open(f"../data/{company}/action_contradicted.json", "w") as f:
             f.write(json.dumps(action_contradicted))
         
         cter += 1
@@ -731,9 +743,9 @@ def main():
 
     master["llm_action_contradicted"] = llm_action_contradicted
 
-    json_object = json.dumps(master, indent=4)
-    with open(f"data/{company}/final/master.json", "w") as f:
-        f.write(json_object)
+    # json_object = json.dumps(master, indent=4)
+    # with open(f"../data/{company}/final/master.json", "w") as f:
+    #     f.write(json_object)
 
     na_i = 0
     for act in non_action:
@@ -742,7 +754,7 @@ def main():
         news_val = web(act['section'], kw, cter)
 
         not_action_contradicted.extend(validate(news_val, act))
-        with open(f"data/{company}/not_action_contradicted.json", "w") as f:
+        with open(f"../data/{company}/not_action_contradicted.json", "w") as f:
             f.write(json.dumps(not_action_contradicted))
         na_i += 1
         cter += 1
@@ -754,9 +766,9 @@ def main():
 
     master["llm_not_action_contradicted"] = llm_not_action_contradicted
 
-    json_object = json.dumps(master, indent=4)
-    with open(f"data/{company}/final/master.json", "w") as f:
-        f.write(json_object)
+    # json_object = json.dumps(master, indent=4)
+    # with open(f"../data/{company}/final/master.json", "w") as f:
+    #     f.write(json_object)
 
     final_score, sep_scores, sec_scores = llm_score(esg_texts, texts_0, texts_1, na, non_action, action, action_contradicted, not_action_contradicted)
 
@@ -820,9 +832,9 @@ def main():
     claims_score = (len(texts_1) / len(sentences))
     action_score = (len(action) / len(sentences))
 
-    json_object = json.dumps(master, indent=4)
-    with open(f"data/{company}/final/master.json", "w") as f:
-        f.write(json_object)
+    # json_object = json.dumps(master, indent=4)
+    # with open(f"../data/{company}/final/master.json", "w") as f:
+    #     f.write(json_object)
 
     env, soc, gov = relative()
     net_action = action_score - claims_score
@@ -863,7 +875,7 @@ def main():
     }
 
     json_object = json.dumps(master, indent=4)
-    with open(f"data/{company}/final/master.json", "w") as f:
+    with open(f"../data/{company}/final/master.json", "w") as f:
         f.write(json_object)
 
     print("Greenwashing Score: " + str(greenwashing_score))
@@ -886,4 +898,4 @@ def main():
     # print("Separate Scores:" + sep_scores)
     # print("Section Scores:" + sec_scores)
 
-main()
+# main()
