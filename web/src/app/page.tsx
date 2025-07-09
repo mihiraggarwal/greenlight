@@ -55,7 +55,7 @@ export default function Home() {
         <h1 className="text-3xl font-bold text-black">Greenlight</h1>
         <p className="text-lg text-gray-500">Providing greenwashing scores and insights for companies</p>
       </div>
-      <select className="w-2/5 p-2 border border-gray-300 rounded text-black" onChange={async (e) => {
+      <select className="w-full sm:w-2/5 p-2 border border-gray-300 rounded text-black" onChange={async (e) => {
           setCompany(e.target.value.toLowerCase())
           const res = await fetch('/api/company',  {
             method: 'POST',
@@ -71,7 +71,7 @@ export default function Home() {
         ))}
       </select>
       { company && (
-        <div className="flex flex-col items-center w-2/5 gap-8">
+        <div className="flex flex-col items-center w-full sm:w-2/5 gap-8">
           <div className="flex flex-row justify-between items-center w-full">
             <Gauge width={150} height={150} value={greenwashing_score} sx={() => ({
               [`& .${gaugeClasses.valueText}`]: {
@@ -90,7 +90,7 @@ export default function Home() {
           </div>
           <h2 className="text-2xl font-bold text-black text-left w-full">Insights</h2>
           <div className="flex flex-col items-center w-full gap-8">
-            <div className="flex flex-row justify-between items-center w-full bg-white shadow-md rounded-lg p-4">
+            <div className="flex flex-row justify-between items-center w-full bg-white shadow-md rounded-lg p-4 mb-4">
               <div className="flex flex-col items-center justify-center">
                 <Gauge width={100} height={100} value={flesch_reading_ease} />
                 <p className="text-lg text-gray-700">Readibility Score</p>
@@ -113,7 +113,7 @@ export default function Home() {
               </div>
               <p className="text-lg text-gray-700">Relative ESG Scores</p>
             </div>
-            <div className="flex flex-row justify-between items-center p-4 gap-6">
+            <div className="flex flex-col sm:flex-row w-full sm:w-auto justify-between items-center p-4 gap-6">
               <div className="flex flex-col justify-between items-center bg-white shadow-md rounded-lg p-4 w-full gap-2">
                 <p className="text-2xl font-bold text-gray-700">{data.sentences_claims1.sentences.length}</p>
                 <p className="text-lg text-gray-500">Sustainability Claims</p>
