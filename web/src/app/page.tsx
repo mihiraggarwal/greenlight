@@ -1,6 +1,7 @@
 "use client";
 
 import { Gauge, gaugeClasses } from '@mui/x-charts/Gauge';
+import AddIcon from '@mui/icons-material/Add';
 import { BarChart } from '@mui/x-charts/BarChart';
 import { useEffect, useState } from 'react';
 
@@ -57,6 +58,25 @@ export default function Home() {
       </div>
       <select className="w-full sm:w-2/5 p-2 border border-gray-300 rounded text-black" onChange={async (e) => {
           setCompany(e.target.value.toLowerCase())
+          if (e.target.value === '') {
+            setData({
+              greenwashing_score: {score: 0},
+              flesch_reading_ease: {score: 0},
+              sentiment_score: {score: 0},
+              sentences_relative: {scores: {
+                'environment': 0,
+                'social': 0,
+                'governance': 0,
+              }},
+              sentences_claims1: {sentences: []},
+              sentences_action: {sentences: []},
+              llm_action_contradicted: {texts: []},
+              llm_not_action_contradicted: {texts: []},
+              llm_separate_scores: {scores: {'Climate Change': 0, 'Natural Capital': 0, 'Pollution & Waste': 0, 'Human Capital': 0, 'Product Liability': 0, 'Community Relations': 0, 'Corporate Governance': 0, 'Business Ethics & Values': 0}}
+            });
+            setRank(0);
+            return;
+          }
           const res = await fetch('/api/company',  {
             method: 'POST',
             body: JSON.stringify({company: e.target.value.toLowerCase()}),
@@ -174,6 +194,12 @@ export default function Home() {
       <footer className="w-full text-center fixed bottom-0 p-3 text-sm bg-gray-100 text-black border-t-1">
         <p>Created with &lt;3 by <a href="https://mihiraggarwal.me" target='_blank' className='underline text-blue-400'>Mihir Aggarwal</a></p>
       </footer>
+      {/* add btn */}
+      <button className="fixed bottom-20 right-10 bg-blue-500 text-white px-3 py-3 rounded-full shadow-lg hover:bg-blue-600 transition-colors hover:cursor-pointer" onClick={() => {
+        window.location.href = '/add';
+      }}>
+        <AddIcon />
+      </button>
       {/* modals */}
       {showModal && <Modal company={company.toLowerCase()} setShowModal={setShowModal} />}
       {showDataModal && <DataModal text={dataText} setShowDataModal={setShowDataModal} />}

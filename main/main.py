@@ -640,7 +640,10 @@ def main(c, l1, l2=""):
     pdf1 = f"../data/{company}/annual_report.pdf"
     pdf2 = f"../data/{company}/esg_report.pdf"
 
-    pdfs = [pdf1, pdf2]
+    if not os.path.exists(pdf2):
+        pdfs = [pdf1]
+    else:
+        pdfs = [pdf1, pdf2]
 
     print("Merging PDFs")
     for pdf in pdfs:
