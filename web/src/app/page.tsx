@@ -8,7 +8,8 @@ import { useEffect, useState } from 'react';
 export default function Home() {
 
   const sep_labels = ['Climate Change', 'Natural Capital', 'Pollution & Waste', 'Human Capital', 'Product Liability', 'Community Relations', 'Corporate Governance', 'Business Ethics & Values']
-  const chatServer = "http://127.0.0.1:5000";
+  
+  const chatServer = "http://localhost:8000";
 
   const [company, setCompany] = useState('');
   const [rank, setRank] = useState(0);
@@ -213,7 +214,7 @@ const Modal = ({company, setShowModal}: {company: string, setShowModal: (value: 
   const [chat, setChat] = useState<{ type: string; text: string }[]>([]);
   const [loading, setLoading] = useState(false);
 
-  const chatServer = "http://127.0.0.1:5000";
+  const chatServer = "http://localhost:8000";
 
   const Chat = () => {
     return <>

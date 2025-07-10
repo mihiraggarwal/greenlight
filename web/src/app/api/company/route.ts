@@ -13,8 +13,8 @@ export const POST = async (req: NextRequest) => {
 
     fs.readdirSync('../data/').forEach(file => {
         if (file != company) {
-            const js = fs.readFileSync(`../data/${file}/final/master.json`, "utf-8");
-            if (js != "") {
+            if (fs.existsSync(`../data/${file}/final/master.json`)) {
+                const js = fs.readFileSync(`../data/${file}/final/master.json`, "utf-8");
                 const parsed = JSON.parse(js);
                 if (parsed.greenwashing_score) {
                     greenwashing_scores.push(parsed.greenwashing_score.score);

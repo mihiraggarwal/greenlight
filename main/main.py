@@ -19,8 +19,12 @@ from nltk.corpus import stopwords
 from urllib3.util.retry import Retry
 from nltk.tokenize import sent_tokenize
 from requests.adapters import HTTPAdapter
+from langchain.docstore.document import Document
+from langchain_community.vectorstores import FAISS
 from nltk.sentiment import SentimentIntensityAnalyzer
 from sklearn.feature_extraction.text import TfidfVectorizer
+from langchain_google_genai import GoogleGenerativeAIEmbeddings
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 from transformers import pipeline, AutoTokenizer, BertTokenizer, BertForSequenceClassification, RobertaTokenizer, AutoModelForSequenceClassification, RobertaForSequenceClassification
 
 load_dotenv()
@@ -626,6 +630,56 @@ def llm_score(esg_texts, texts_0, texts_1, na, non_action, action, action_contra
 
     return final_score, sep_scores, sec_scores
 
+def load_custom_json(company):
+    json_path = f"../data/{company}/final/master.json"
+    with open(json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    documents = []
+    for top_key, value in data.items():
+        explanation = value.get("explanation", "")
+
+        if "score" in value.keys():
+            score = value.get("score", 0)
+            full_text = f"[{top_key}] {score}\n\nExplanation: {explanation}"
+            documents.append(Document(page_content=full_text, metadata={
+                "category": top_key,
+                "explanation": explanation,
+            }))
+
+            continue
+
+        if "scores" in value.keys():
+            scores = value.get("scores", {})
+            for label, score in scores.items():
+                full_text = f"[{top_key}] {label}: {score}\n\nExplanation: {explanation}"
+                documents.append(Document(page_content=full_text, metadata={
+                    "category": top_key,
+                }))
+
+            continue
+
+        texts = []
+        if "texts" in value.keys():
+            texts = value.get("texts", []) 
+        elif "sentences" in value.keys():
+            texts = value.get("sentences", [])
+
+        for item in texts:
+            text = item.get("text", "")
+            section = item.get("section", "Unknown")
+            full_text = f"[{section}] {text}\n\nExplanation: {explanation}"
+            documents.append(Document(page_content=full_text, metadata={
+                "category": top_key,
+            }))
+
+    splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+    split_docs = splitter.split_documents(documents)
+
+    embeddings = GoogleGenerativeAIEmbeddings(model="models/embedding-001", google_api_key=os.getenv("GEMINI_API_KEY"))
+    vectorstore = FAISS.from_documents(split_docs, embeddings)
+    vectorstore.save_local(f"../data/{company}/final/vectorstore")
+
 def main(c, l1, l2=""):
 
     global company, link, link2
@@ -880,6 +934,8 @@ def main(c, l1, l2=""):
     json_object = json.dumps(master, indent=4)
     with open(f"../data/{company}/final/master.json", "w") as f:
         f.write(json_object)
+
+    load_custom_json(company)
 
     print("Greenwashing Score: " + str(greenwashing_score))
     print("Final Score: " + str(final_score))
