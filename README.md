@@ -1,6 +1,6 @@
 # Greenlight
 
-Providing greenwashing scores and insights for Indian companies
+Providing greenwashing scores and insights for Indian tech companies
 
 ## What
 
@@ -15,6 +15,39 @@ awareness and tightening regulatory frameworks. This has led to an increase in t
 outright lies. This project explores whether modern NLP tools can be used to identify potentially greenwashed claims in ESG reports in an automated, interpretable, and ethically responsible manner.
 
 ## How to Use
+
+1. Install Microsoft C++ Built Tools from [here](https://visualstudio.microsoft.com/visual-cpp-build-tools/). This is needed to install scikit-learn.
+2. Install the project and the required libraries:
+    ```ps
+    git clone github.com/mihiraggarwal/greenlight
+    cd greenlight
+
+    pip install -r requirements.txt
+    python -m spacy download en_core_web_sm
+
+    cd web
+    npm install
+    
+    cd ../
+    ```
+3. Create a new Google Cloud Project [here](https://console.cloud.google.com/) and enable Custom Search on it [here](https://developers.google.com/custom-search/v1/overview) from the `Get a Key` button.
+4. Generate the Google Gemini API Key [here](https://aistudio.google.com/apikey).
+5. Add 3 search engines for news verification [here](https://programmablesearchengine.google.com/controlpanel/all). In each of them, put `news.google.com/` in Overview > Search Features > Sites to Search, and in Search Features > Advanced Settings > Web Search Restricts > Site Search Restrictions. These many search engines need to be created to not exhaust free-tier limits per engine.
+6. Rename `.env.example` to `.env` and populate the variables from the ones generated above. `NEWS_CX` refers to the Search Engine ID.
+7. Run all the servers:
+   ```ps
+    cd web
+    npm run build
+    npm start
+
+    cd ../main
+    flask run --port 5000
+
+    cd ../chat
+    flask run --port 8000
+    ```
+8. Head to `localhost:3000` to view results for pre-run companies, and to upload the reports of the company you want to generate greenwashing insights for.
+9. The process will take a couple hours after which the results will be visible on the dashboard.
 
 ## Architecture
 
