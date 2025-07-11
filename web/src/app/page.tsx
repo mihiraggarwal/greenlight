@@ -170,7 +170,7 @@ export default function Home() {
                     body: JSON.stringify({ company: company })
                   })
                   const json = await res.json();
-                  setDataText(JSON.stringify(json));
+                  setDataText(JSON.stringify(json, null, 4));
                 }}>Master Data</button>
                 <button className="bg-blue-500 text-white px-4 py-2 rounded w-full cursor-pointer" onClick={async () => {
                   setShowDataModal(true);
@@ -182,7 +182,7 @@ export default function Home() {
                     body: JSON.stringify({ company: company })
                   })
                   const json = await res.json();
-                  setDataText(JSON.stringify(json));
+                  setDataText(JSON.stringify(json).replace(/\\n/g, '\n').slice(1, -1));
                 }}>Logfile</button>
               </div>
               <button className="bg-blue-500 text-white px-4 py-2 rounded w-full cursor-pointer" onClick={() => setShowModal(true)}>Ask Questions about the Company</button>
@@ -298,9 +298,9 @@ const DataModal = ({text, setShowDataModal}: {text: string, setShowDataModal: (v
     <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center text-black">
     <div className="p-8 border w-2/3 h-2/3 shadow-lg rounded-md bg-white flex flex-col items-center justify-between">
       <div className="text-center">
-        <h3 className="text-2xl font-bold text-gray-900">master.json</h3>
+        <h3 className="text-2xl font-bold text-gray-900">{text.charAt(0) == "{" ? "master.json" : "logfile"}</h3>
       </div>
-      <pre className='flex flex-col justify-start items-start w-full h-full overflow-y-scroll mt-4 p-4 gap-2 whitespace-pre-line'>
+      <pre className='flex flex-col justify-start items-start w-full h-full overflow-y-scroll mt-4 p-4 gap-2 whitespace-pre-wrap'>
         {text}
       </pre>
       <button className="mt-4 bg-blue-500 text-white px-4 py-2 rounded" onClick={() => setShowDataModal(false)}>Close</button>
