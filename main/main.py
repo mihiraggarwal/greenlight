@@ -177,8 +177,8 @@ def claims(texts):
     
     texts = [texts[i] for i in range(len(texts)) if preds[i] == 1]
 
-    with open(f"../data/{company}/claims.json", "w") as f:
-        f.write(json.dumps(texts))
+    # with open(f"../data/{company}/claims.json", "w") as f:
+    #     f.write(json.dumps(texts))
     
     print("\nSuccessfully classified text into claims and non-claims.\n")
     logging.info("Successfully classified text into claims and non-claims.")
@@ -210,11 +210,11 @@ def actions(texts):
         if c % 5 == 0:
             print(c, end=' ')
 
-    with open(f"../data/{company}/actions.json", "w") as f:
-        f.write(json.dumps(action))
+    # with open(f"../data/{company}/actions.json", "w") as f:
+    #     f.write(json.dumps(action))
 
-    with open(f"../data/{company}/non_action.json", "w") as f:
-        f.write(json.dumps(non_action))
+    # with open(f"../data/{company}/non_action.json", "w") as f:
+    #     f.write(json.dumps(non_action))
     
     print("\nSuccessfully classified text into actions and non-actions.\n")
     logging.info("Successfully classified text into actions and non-actions.")
@@ -787,8 +787,8 @@ def main(c, l1, l2=""):
         news_val = web(act['section'], kw, cter)
 
         action_contradicted.extend(validate(news_val, act))
-        with open(f"../data/{company}/action_contradicted.json", "w") as f:
-            f.write(json.dumps(action_contradicted))
+        # with open(f"../data/{company}/action_contradicted.json", "w") as f:
+        #     f.write(json.dumps(action_contradicted))
         
         cter += 1
         a_i += 1
@@ -811,8 +811,8 @@ def main(c, l1, l2=""):
         news_val = web(act['section'], kw, cter)
 
         not_action_contradicted.extend(validate(news_val, act))
-        with open(f"../data/{company}/not_action_contradicted.json", "w") as f:
-            f.write(json.dumps(not_action_contradicted))
+        # with open(f"../data/{company}/not_action_contradicted.json", "w") as f:
+        #     f.write(json.dumps(not_action_contradicted))
         na_i += 1
         cter += 1
 
